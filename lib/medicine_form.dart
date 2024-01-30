@@ -1,15 +1,12 @@
-import 'package:bacteriofago/schemas.dart';
-import 'package:flutter/cupertino.dart';
+import 'package:bacteriofago/db/medicine.dart';
 import 'package:flutter/material.dart';
-
-import 'db.dart';
 
 class MedicineForm extends StatelessWidget {
   MedicineForm({Key? key, this.initialMedicine, required this.operation})
       : super(key: key);
 
-  final Medicine? initialMedicine;
-  final Function(Medicine) operation;
+  final MedicineSchema? initialMedicine;
+  final Function(MedicineSchema) operation;
   final nameController = TextEditingController();
   final activesController = TextEditingController();
   final doseController = TextEditingController();
@@ -25,6 +22,8 @@ class MedicineForm extends StatelessWidget {
           TextEditingValue(text: initialMedicine!.dose.toString());
       doseUnitController.value =
           TextEditingValue(text: initialMedicine!.doseUnit);
+    } else {
+      doseUnitController.value = const TextEditingValue(text: "mg");
     }
 
     return AlertDialog(
@@ -53,7 +52,7 @@ class MedicineForm extends StatelessWidget {
                   keyboardType: TextInputType.number,
                   controller: doseController,
                   decoration: const InputDecoration(
-                    hintText: 'Dosis del activo',
+                    hintText: 'Dosis',
                   ),
                 ),
               ),
@@ -79,7 +78,7 @@ class MedicineForm extends StatelessWidget {
         TextButton(
           onPressed: () {
             Navigator.of(context).pop();
-            var newMedicine = Medicine(
+            var newMedicine = MedicineSchema(
               name: nameController.value.text,
               actives: activesController.value.text.split(','),
               dose: int.parse(doseController.value.text),

@@ -1,11 +1,11 @@
 import 'package:bacteriofago/medicine_form.dart';
-import 'package:bacteriofago/schemas.dart';
+import 'package:bacteriofago/notification_service.dart';
+import 'package:bacteriofago/db/medicine.dart';
 import 'package:flutter/material.dart';
-
-import 'db.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
 class MedicineInfo extends StatefulWidget {
-  final Medicine medicine;
+  final MedicineSchema medicine;
   const MedicineInfo({Key? key, required this.medicine}) : super(key: key);
 
   @override
@@ -15,12 +15,11 @@ class MedicineInfo extends StatefulWidget {
 class _MedicineInfoState extends State<MedicineInfo> {
   _MedicineInfoState();
 
-  void _updateMedicine(Medicine medicine) async {
+  void _updateMedicine(MedicineSchema medicine) async {
     ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Guardando medicamento...')));
 
-    DB
-        .updateMedicine(widget.medicine.id, medicine)
+    Medicine.updateMedicine(widget.medicine.id, medicine)
         .then((value) => Navigator.of(context).pop());
   }
 
@@ -34,7 +33,7 @@ class _MedicineInfoState extends State<MedicineInfo> {
   }
 
   _deleteMedicine() async {
-    await DB.deleteMedicine(widget.medicine.id);
+    await Medicine.deleteMedicine(widget.medicine.id);
   }
 
   _deleteMedicineForm() async {
@@ -74,22 +73,38 @@ class _MedicineInfoState extends State<MedicineInfo> {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        title: Text("Info - ${widget.medicine.name}"),
+        title: Text('Info - ${widget.medicine.name}'),
         actions: [
           IconButton(
               onPressed: _deleteMedicineForm, icon: const Icon(Icons.delete)),
+          IconButton(
+            icon: const Icon(Icons.notifications),
+            onPressed: () {},
+          )
         ],
       ),
       body: Padding(
-          padding: const EdgeInsets.fromLTRB(16.0, 8.0, 0, 0),
-          child: Stack(
+          padding: const EdgeInsets.fromLTRB(32, 24, 0, 0),
+          child: Column(
             children: [
               Text(
-                "Dosis: ${widget.medicine.dose.toString()} ${widget.medicine.doseUnit}",
+                'Dosis: ${widget.medicine.dose.toString()} ${widget.medicine.doseUnit}',
                 style: const TextStyle(
                   fontSize: 20,
                 ),
               ),
+              TextButton(
+                  onPressed: () async {
+                    const AndroidNotificationDetails androidDetails =
+                        AndroidNotificationDetails('channelId', 'channelName',
+                            ticker: 'ticker');
+                    const NotificationDetails notificationDetails =
+                        NotificationDetails(android: androidDetails);
+                    await Notifications.service.show(
+                        0, 'Hi there', 'Is it working?', notificationDetails,
+                        payload: 'item x');
+                  },
+                  child: const Text('Send notification'))
             ],
           )),
       floatingActionButton: FloatingActionButton(

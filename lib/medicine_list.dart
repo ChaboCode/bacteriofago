@@ -1,5 +1,5 @@
-import 'package:bacteriofago/db.dart';
-import 'package:bacteriofago/schemas.dart';
+import 'package:bacteriofago/db/medicine.dart';
+import 'package:bacteriofago/search.dart';
 import 'package:flutter/material.dart';
 
 import 'medicine_form.dart';
@@ -8,19 +8,23 @@ import 'medicine_info.dart';
 class MedicineList extends StatefulWidget {
   const MedicineList({Key? key}) : super(key: key);
 
+  static List<Widget> appBarActions = [
+    AppBarSearchButton()
+  ];
+
   @override
   _MedicineListState createState() => _MedicineListState();
 }
 
 class _MedicineListState extends State<MedicineList> {
-  List<Medicine> _items = [];
+  List<MedicineSchema> _items = [];
   bool _isLoading = true;
 
   _refreshMedicines() async {
-    final data = await DB.getItems();
+    final data = await Medicine.getItems();
     setState(() {
       _items = data
-          .map((e) => Medicine(
+          .map((e) => MedicineSchema(
               id: e['id'],
               name: e['name'],
               actives: e['actives'].split(' '),
@@ -37,7 +41,7 @@ class _MedicineListState extends State<MedicineList> {
     _refreshMedicines();
   }
 
-  _showMedicine(Medicine medicine) {
+  _showMedicine(MedicineSchema medicine) {
     Navigator.push(
         context,
         MaterialPageRoute(
@@ -49,7 +53,7 @@ class _MedicineListState extends State<MedicineList> {
     await showDialog(
         context: context,
         builder: (BuildContext context) {
-          return MedicineForm(operation: DB.insertMedicine);
+          return MedicineForm(operation: Medicine.insertMedicine);
         });
     _refreshMedicines();
   }
@@ -66,10 +70,6 @@ class _MedicineListState extends State<MedicineList> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        title: const Text('Bacteriofago'),
-      ),
       body: _isLoading
           ? const Center(
               child: CircularProgressIndicator(),

@@ -1,8 +1,38 @@
-import 'package:bacteriofago/medicine_list.dart';
+import 'package:bacteriofago/db/alarm.dart';
+import 'package:bacteriofago/home.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:timezone/data/latest_all.dart' as tz;
+import 'package:timezone/timezone.dart' as tz;
+import 'package:flutter_timezone/flutter_timezone.dart';
+
+import 'notification_service.dart';
 
 void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  Alarm.initDB();
+
+  var android = AndroidFlutterLocalNotificationsPlugin();
+  android.requestExactAlarmsPermission();
+
+  tz.initializeTimeZones();
+  tz.setLocalLocation(tz.getLocation(await FlutterTimezone.getLocalTimezone()));
+
+  const AndroidInitializationSettings androidInitializationSettings =
+      AndroidInitializationSettings('@mipmap/ic_launcher');
+  const InitializationSettings initializationSettings =
+      InitializationSettings(android: androidInitializationSettings);
+  await Notifications.service.initialize(
+      initializationSettings,
+      onDidReceiveNotificationResponse: onDidReceiveNotificationResponse);
   runApp(const MyApp());
+}
+
+void onDidReceiveNotificationResponse(NotificationResponse details) async {
+  final String? payload = details.payload;
+  if (details.payload != null) {
+    print('notification payload: $payload');
+  }
 }
 
 class MyApp extends StatelessWidget {
@@ -14,41 +44,14 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'Flutter Demo',
       theme: ThemeData(
-       colorScheme: ColorScheme.fromSeed(seedColor: Colors.green),
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
         useMaterial3: true,
       ),
-      home: const MedicineList(),
-    );
-  }
-}
-
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
-
-  // This widget is the home page of your application. It is stateful, meaning
-  // that it has a State object (defined below) that contains fields that affect
-  // how it looks.
-
-  // This class is the configuration for the state. It holds the values (in this
-  // case the title) provided by the parent (in this case the App widget) and
-  // used by the build method of the State. Fields in a Widget subclass are
-  // always marked "final".
-
-  final String title;
-
-  @override
-  State<MyHomePage> createState() => _MyHomePageState();
-}
-
-class _MyHomePageState extends State<MyHomePage> {
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        title: Text(widget.title),
+      darkTheme: ThemeData(
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue, brightness: Brightness.dark),
+        useMaterial3: true,
       ),
-      body: const MedicineList(),
+      home: const Home(),
     );
   }
 }
